@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tangkap Koin</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: #111;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    h1 {
+        margin: 15px 0 5px;
+    }
+
+    #score {
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+
+    #game {
+        position: relative;
+        width: 95%;
+        max-width: 500px;
+        height: 600px;
+        margin: auto;
+        background: linear-gradient(#182848, #4b6cb7);
+        border: 3px solid white;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    #player {
+        position: absolute;
+        bottom: 20px;
+        left: 210px;
+        width: 70px;
+        height: 40px;
+        background: #00ff88;
+        border-radius: 12px;
+        box-shadow: 0 0 15px #00ff88;
+    }
+
+    #coin {
+        position: absolute;
+        top: -40px;
+        left: 100px;
+        width: 35px;
+        height: 35px;
+        background: gold;
+        border-radius: 50%;
+        box-shadow: 0 0 15px yellow;
+    }
+
+    #gameOver {
+        display: none;
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,.8);
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    #gameOver h2 {
+        font-size: 40px;
+    }
+
+    button {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 10px;
+        background: #00ff88;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .controls {
+        margin-top: 15px;
+    }
+
+    .controls button {
+        margin: 5px;
+        width: 80px;
+        background: #333;
+        color: white;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>🪙 Tangkap Koin</h1>
+<div id="score">Skor: 0</div>
+
+<div id="game">
+
+    <div id="player"></div>
+    <div id="coin"></div>
+
+    <div id="gameOver">
+        <h2>GAME OVER</h2>
+        <p>Skor kamu: <span id="finalScore">0</span></p>
+        <button onclick="restartGame()">Main Lagi</button>
+    </div>
+
+</div>
+
+<div class="controls">
+    <button onclick="moveLeft()">⬅️</button>
+    <button onclick="moveRight()">➡️</button>
+</div>
+
+<script>
+
+const player = document.getElementById("player");
+const coin = document.getElementById("coin");
+const game = document.getElementById("game");
+
+let playerX = 210;
+let coinX = 100;
+let coinY = -40;
+
+let score = 0;
+let speed = 4;
+let gameRunning = true;
+
+function moveLeft() {
+    if (!gameRunning) return;
+
+    playerX -= 30;
+
+    if (playerX < 0) {
+        playerX = 0;
+    }
+
+    player.style.left = playerX + "px";
+}
+
+function moveRight() {
+    if (!gameRunning) return;
+
+    playerX += 30;
+
+    if (playerX > game.clientWidth - player.offsetWidth) {
+        playerX = game.clientWidth - player.offsetWidth;
+    }
+
+    player.style.left = playerX + "px";
+}
+
+document.addEventListener("keydown", function(e) {
+
+    if (e.key === "ArrowLeft") {
+        moveLeft();
+    }
+
+    if (e.key === "ArrowRight") {
+        moveRight();
+    }
+
+});
+
+function newCoin() {
+
+    coinX = Math.random() * (game.clientWidth - coin.offsetWidth);
+    coinY = -40;
+
+    coin.style.left = coinX + "px";
+    coin.style.top = coinY + "px";
+}
+
+function gameLoop() {
+
+    if (!gameRunning) return;
+
+    coinY += speed;
+    coin.style.top = coinY + "px";
+
+    let playerLeft = playerX;
+    let playerRight = playerX + player.offsetWidth;
+
+    let coinLeft = coinX;
+    let coinRight = coinX + coin.offsetWidth;
+
+    let playerTop = game.clientHeight - 20 - player.offsetHeight;
+    let playerBottom = game.clientHeight - 20;
+
+    let coinBottom = coinY + coin.offsetHeight;
+
+    // Cek tabrakan
+    if (
+        coinBottom >= playerTop &&
+        coinY <= playerBottom &&
+        coinRight >= playerLeft &&
+        coinLeft <= playerRight
+    ) {
+
+        score++;
+        document.getElementById("score").innerText =
+            "Skor: " + score;
+
+        // Tambah kecepatan
+        speed += 0.3;
+
+        newCoin();
+    }
+
+    // Kalau koin jatuh
+    if (coinY > game.clientHeight) {
+
+        gameRunning = false;
+
+        document.getElementById("finalScore").innerText = score;
+        document.getElementById("gameOver").style.display = "flex";
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+function restartGame() {
+
+    score = 0;
+    speed = 4;
+    playerX = 210;
+
+    document.getElementById("score").innerText =
+        "Skor: 0";
+
+    player.style.left = playerX + "px";
+
+    document.getElementById("gameOver").style.display = "none";
+
+    gameRunning = true;
+
+    newCoin();
+    gameLoop();
+}
+
+newCoin();
+gameLoop();
+
+</script>
+
+</body>
+</html>
